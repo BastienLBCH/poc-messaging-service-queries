@@ -1,0 +1,14 @@
+fastapi[all]
+uvicorn[standard]
+sqlalchemy
+
+confluent-kafka
+
+pyjwt
+cryptography
+
+httpx
+pytest
+
+requests
+dateutils
