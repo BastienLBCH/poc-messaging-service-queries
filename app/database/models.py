@@ -19,6 +19,7 @@ class User(Base):
 
     id = Column(String, primary_key=True)
 
+    owned_conversations = relationship('Conversation', back_populates='owner')
     conversations = relationship('Conversation', secondary='mtmUserConversations', back_populates='users')
     messages = relationship('Message', back_populates='user', cascade='all, delete-orphan')
 
@@ -29,7 +30,9 @@ class Conversation(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     created_at = Column(DateTime, default=func.now())
+    owner_id = Column(String, ForeignKey("User.id"))
 
+    owner = relationship('User', back_populates='owned_conversations')
     users = relationship('User', secondary='mtmUserConversations', back_populates='conversations')
     messages = relationship('Message', back_populates='conversation', cascade='all, delete-orphan')
 

@@ -17,6 +17,8 @@ def handle_event(event):
         interface.add_user_to_conversation(event)
     elif event['event'] == "userSentMessageToConversation":
         interface.add_message_to_conversation(event)
+    elif event['event'] == "userRemovedParticipantToConversation":
+        interface.remove_user_from_conversatin(event)
 
 
 def kafka_worker():
