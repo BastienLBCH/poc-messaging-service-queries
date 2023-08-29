@@ -37,7 +37,7 @@ class Conversation(Base):
 class Message(Base):
     __tablename__ = 'Message'
 
-    id = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(String)
     created_at = Column(DateTime, default=func.now())
 

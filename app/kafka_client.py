@@ -9,6 +9,16 @@ from app.database.database import SessionLocal
 db = SessionLocal()
 
 
+def handle_event(event):
+    # print(event)
+    if event['event'] == "userCreatedConversation":
+        interface.create_conversation(event)
+    elif event['event'] == "userAddedParticipantToConversation":
+        interface.add_user_to_conversation(event)
+    elif event['event'] == "userSentMessageToConversation":
+        interface.add_message_to_conversation(event)
+
+
 def kafka_worker():
     settings = Settings()
 
@@ -38,9 +48,8 @@ def kafka_worker():
                     topic=msg.topic(), key=msg.key().decode('utf-8'), value=msg.value().decode('utf-8')))
 
                 event = json.loads(msg.value().decode('utf-8'))
+                handle_event(event)
 
-                if event['event'] == "userCreatedConversation":
-                    interface.create_conversation(event)
 
     except Exception:
         pass
