@@ -18,7 +18,7 @@ def handle_event(event):
     elif event['event'] == "userSentMessageToConversation":
         interface.add_message_to_conversation(event)
     elif event['event'] == "userRemovedParticipantToConversation":
-        interface.remove_user_from_conversatin(event)
+        interface.remove_user_from_conversation(event)
     elif event['event'] == "userDeletedConversation":
         interface.delete_conversation(event)
 
