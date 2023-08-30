@@ -12,6 +12,7 @@ from app.main import app
 
 db = SessionLocal()
 
+
 class TestCreateConversation:
     def setup_method(self):
         models.Base.metadata.create_all(bind=engine)
@@ -66,9 +67,25 @@ class TestRemoveConversation:
         }
         handle_event(self.created_conversation)
 
-    def test_user_remove_conversation(self):
+    def test_user_delete_conversation(self):
         id_conversation = self.created_conversation['id']
+        user_id = self.created_conversation['creator_id']
 
+        event = {
+            "id": 1,
+            "user_id": user_id,
+            "conversation_id": id_conversation,
+            "event": "userDeletedConversation",
+            "created_at": "2023-08-30T12:13:56.008436Z"
+        }
+        handle_event(event)
+
+        # Verify conversation exists
+        db_conversation = self.db.query(models.Conversation) \
+            .filter(models.Conversation.id == id_conversation) \
+            .first()
+
+        assert db_conversation is None
 
 
 

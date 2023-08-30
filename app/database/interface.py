@@ -59,6 +59,7 @@ def add_message_to_conversation(event: dict):
         db.add(db_message)
         db.commit()
 
+
 def remove_user_from_conversatin(event: dict):
     db_user = db.query(models.User).filter(models.User.id==event['user_id']).first()
     db_conversation = db.query(models.Conversation).filter(models.Conversation.id==event['conversation_id']).first()
@@ -69,6 +70,14 @@ def remove_user_from_conversatin(event: dict):
             db_conversation.users.remove(db_participant)
             db.commit()
 
+
+def delete_conversation(event: dict):
+    db_user = db.query(models.User).filter(models.User.id==event['user_id']).first()
+    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==event['conversation_id']).first()
+
+    if db_conversation.owner == db_user:
+        db.delete(db_conversation)
+        db.commit()
 
 
 
