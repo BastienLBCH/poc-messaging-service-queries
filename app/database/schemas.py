@@ -3,7 +3,7 @@ import datetime
 
 
 class Conversation(BaseModel):
-    model_config = ConfigDict(from_attributes = True)
+    model_config = ConfigDict(from_attributes=True)
 
     id: str
     name: str
@@ -11,9 +11,9 @@ class Conversation(BaseModel):
 
 
 class Message(BaseModel):
-    model_config = ConfigDict(from_attributes = True)
+    model_config = ConfigDict(from_attributes=True)
 
-    id: str
+    id: int
     content: str
     user_id: str
     created_at: datetime.datetime
@@ -21,7 +21,7 @@ class Message(BaseModel):
 
 
 class User(BaseModel):
-    model_config = ConfigDict(from_attributes = True)
+    model_config = ConfigDict(from_attributes=True)
 
     id: str
 

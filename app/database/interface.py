@@ -90,6 +90,11 @@ def add_message_to_conversation(event: dict):
 
 
 def remove_user_from_conversation(event: dict):
+    """
+    Remove a user from a conversation
+    :param event:
+    :return:
+    """
     db_user = db.query(models.User).filter(models.User.id==event['user_id']).first()
     db_conversation = db.query(models.Conversation).filter(models.Conversation.id==event['conversation_id']).first()
 
@@ -101,6 +106,11 @@ def remove_user_from_conversation(event: dict):
 
 
 def delete_conversation(event: dict):
+    """
+    Delete a specific conversation
+    :param event:
+    :return:
+    """
     required_keys = ['user_id', 'conversation_id']
     if event_contains_all_required_fields(event, required_keys):
         db_user = db.query(models.User).filter(models.User.id==event['user_id']).first()
@@ -111,6 +121,49 @@ def delete_conversation(event: dict):
             db.commit()
             return True
     return False
+
+
+def get_all_conversations_from_user(user_id: str):
+    """
+    Get all conversations from a specific user
+    :param user_id:
+    :return:
+    """
+    db_user = db.query(models.User).filter(models.User.id==user_id).first()
+    return db_user.conversations
+
+
+def get_all_messages_from_conversation(user_id: str, conversation_id: str):
+    """
+    Get all messages from a conversation
+    :param user_id:
+    :param conversation_id:
+    :return:
+    """
+    db_user = db.query(models.User).filter(models.User.id==user_id).first()
+    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==conversation_id).first()
+
+    if db_user in db_conversation.users:
+        db_messages = db.query(models.Message).filter(models.Message.conversation_id==conversation_id).order_by(models.Message.created_at).all()
+        return db_messages
+    return None
+
+
+def get_all_users_ids_from_conversation(conversation_id: str):
+    """
+    Return all users ids from a specific conversation
+    :param conversation_id: str conversation id
+    :return:
+    """
+    users_id_list: list = []
+
+    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==conversation_id).all()
+    for user in db_conversation.users:
+        users_id_list.append(user.id)
+
+    return users_id_list
+
+
 
 
 

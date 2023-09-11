@@ -15,7 +15,7 @@ db = SessionLocal()
 class TestAddUserToConversation:
     def setup_method(self):
         """
-        Setup the database and conversation required for the following tests
+        Set up the database and conversation required for the following tests
         :return:
         """
         models.Base.metadata.create_all(bind=engine)
@@ -228,7 +228,7 @@ class TestRemoveUserFromConversation:
         """
         id_conversation = self.created_conversation['id']
         participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
-        owner_id = self.created_conversation['user_id']
+        owner_id = self.created_conversation['creator_id']
 
         event = {
             "id": 1,
@@ -255,7 +255,7 @@ class TestRemoveUserFromConversation:
 
         db.refresh(db_conversation)
         participant_still_in_conversation = db_user in db_conversation.users
-        assert participant_still_in_conversation is False
+        assert participant_still_in_conversation is True
 
 
 

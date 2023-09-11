@@ -8,6 +8,21 @@ settings = Settings()
 app = FastAPI()
 
 
+async def validate_token(token):
+    keycloak_public_key = settings.keycloak_public_key
+    keycloak_alg = settings.keycloak_alg
+    key = '-----BEGIN PUBLIC KEY-----\n' + keycloak_public_key + '\n-----END PUBLIC KEY-----'
+
+    payload = jwt.decode(
+        token,
+        key,
+        algorithms=keycloak_alg,
+        audience="account"
+    )
+
+    return payload
+
+
 class ValidatingMiddleware:
     def __init__(self):
         pass
@@ -21,15 +36,7 @@ class ValidatingMiddleware:
             if name != "Bearer":
                 raise Exception
 
-            payload = None
-            key = '-----BEGIN PUBLIC KEY-----\n' + keycloak_public_key + '\n-----END PUBLIC KEY-----'
-
-            payload = jwt.decode(
-                bearer,
-                key,
-                algorithms=keycloak_alg,
-                audience="account"
-            )
+            await validate_token(bearer)
 
         except Exception:
             return JSONResponse({'detail': "User is not correctly authentified"}, status_code=401)
