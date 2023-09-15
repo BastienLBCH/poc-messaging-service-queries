@@ -157,7 +157,7 @@ def get_all_users_ids_from_conversation(conversation_id: str):
     """
     users_id_list: list = []
 
-    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==conversation_id).all()
+    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==conversation_id).first()
     for user in db_conversation.users:
         users_id_list.append(user.id)
 

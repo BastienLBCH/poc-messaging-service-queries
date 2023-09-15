@@ -28,18 +28,22 @@ class ValidatingMiddleware:
         pass
 
     async def __call__(self, request: Request, call_next):
-        keycloak_public_key = settings.keycloak_public_key
-        keycloak_alg = settings.keycloak_alg
+        if request.url.path != "/" \
+                and not request.url.path.endswith("/static/") \
+                and not request.url.path.startswith("ws://")\
+                and not request.url.path.endswith(".js"):
+            keycloak_public_key = settings.keycloak_public_key
+            keycloak_alg = settings.keycloak_alg
 
-        try:
-            name, bearer = request.headers["Authorization"].split(" ")
-            if name != "Bearer":
-                raise Exception
+            try:
+                name, bearer = request.headers["Authorization"].split(" ")
+                if name != "Bearer":
+                    raise Exception
 
-            await validate_token(bearer)
+                await validate_token(bearer)
 
-        except Exception:
-            return JSONResponse({'detail': "User is not correctly authentified"}, status_code=401)
+            except Exception:
+                return JSONResponse({'detail': "User is not correctly authentified"}, status_code=401)
 
         response = await call_next(request)
         return response

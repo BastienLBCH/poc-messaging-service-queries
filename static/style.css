@@ -1,0 +1,9 @@
+html {
+  height: 100%;
+}
+
+.full_height {
+  height: 95vh;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+}

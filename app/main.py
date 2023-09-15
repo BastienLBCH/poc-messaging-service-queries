@@ -1,4 +1,5 @@
-from multiprocessing import Process
+import threading
+import asyncio
 
 from contextlib import asynccontextmanager
 from fastapi import (
@@ -11,20 +12,49 @@ from fastapi import (
 )
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.kafka_client import kafka_worker
 from app.middleware import ValidatingMiddleware
 from app.database import models, schemas
-from app.database.interface import get_all_conversations_from_user, \
-    get_all_messages_from_conversation
+from app.database.interface import (
+    get_all_conversations_from_user,
+    get_all_messages_from_conversation,
+    create_conversation,
+    add_user_to_conversation,
+    add_message_to_conversation,
+    remove_user_from_conversation,
+    delete_conversation,
+)
 from app.database.database import engine, SessionLocal
 from app.utils import get_userid_from_request
+from app.settings import Settings
 from app.websockets import ConnectionManager
 
 models.Base.metadata.create_all(bind=engine)
 
-connection_manager = ConnectionManager()
 templates = Jinja2Templates(directory="templates")
+
+connection_manager = ConnectionManager()
+
+
+async def handle_event(event):
+    if event['event'] == "userCreatedConversation":
+        await connection_manager.create_conversation(event)
+        create_conversation(event)
+    elif event['event'] == "userAddedParticipantToConversation":
+        await connection_manager.add_user_to_conversation(event)
+        add_user_to_conversation(event)
+    elif event['event'] == "userSentMessageToConversation":
+        await connection_manager.send_message(event)
+        add_message_to_conversation(event)
+    elif event['event'] == "userRemovedParticipantToConversation":
+        await connection_manager.remove_user_from_conversation(event)
+        remove_user_from_conversation(event)
+    elif event['event'] == "userDeletedConversation":
+        await connection_manager.delete_conversation(event)
+        delete_conversation(event)
 
 
 def get_db():
@@ -39,28 +69,46 @@ def get_db():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Poll for new messages from Kafka and print them.
-    process = Process(target=kafka_worker, args=())
-    process.start()
+    stop_threads = False
+    mythread = threading.Thread(target=kafka_worker, args=(handle_event, lambda: stop_threads, ))
+    mythread.start()
     yield
-    process.terminate()
+    stop_threads = True
+    mythread.join()
 
 
 app = FastAPI(lifespan=lifespan)
 
 authmiddleware = ValidatingMiddleware()
 app.add_middleware(BaseHTTPMiddleware, dispatch=authmiddleware)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+settings = Settings()
 
 
 @app.websocket("/ws/{token}")
-async def websocket_endpoint(websocket: WebSocket, token: int):
+async def websocket_endpoint(websocket: WebSocket, token: str):
     try:
         await connection_manager.connect(websocket, token)
         while True:
             data = await websocket.receive_text()
     except WebSocketDisconnect:
         connection_manager.disconnect(websocket)
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"\n###\n Websocket exception: {e} \n###\n")
+
+
+@app.get("/", response_class=HTMLResponse)
+async def get_index(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            'keycloak_token_url': settings.keycloak_token_url,
+            'keycloak_users_url': settings.keycloak_users_url,
+            'keycloak_client_id': settings.keycloak_client_id,
+            'command_server': settings.command_server
+        })
 
 
 @app.get("/ping")

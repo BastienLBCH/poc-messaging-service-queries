@@ -13,8 +13,11 @@ class Settings(BaseSettings):
     keycloak_username_test_2: str
     keycloak_password_test: str
     keycloak_token_url: str
+    keycloak_users_url: str
 
     env: str
+
+    command_server: str
 
     model_config = SettingsConfigDict(env_file=".env")
 

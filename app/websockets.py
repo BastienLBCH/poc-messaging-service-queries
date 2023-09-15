@@ -14,6 +14,7 @@ class ConnectionManager:
         payload = await validate_token(token)
         await websocket.accept()
         self.active_connections.append({'user': payload["sub"], 'websocket': websocket})
+        print(self.active_connections)
 
     def disconnect(self, websocket: WebSocket):
         for connection in self.active_connections:
@@ -31,17 +32,17 @@ class ConnectionManager:
     async def create_conversation(self, event: dict):
         for connection in self.active_connections:
             if connection['user'] == event['creator_id']:
-                connection['websocket'].send_text(json.dumps(event))
+                await connection['websocket'].send_text(json.dumps(event))
 
     async def add_user_to_conversation(self, event: dict):
         for connection in self.active_connections:
             if connection['user'] == event['participant_id']:
-                connection['websocket'].send_text(json.dumps(event))
+                await connection['websocket'].send_text(json.dumps(event))
 
     async def remove_user_from_conversation(self, event: dict):
         for connection in self.active_connections:
             if connection['user'] == event['participant_id']:
-                connection['websocket'].send_text(json.dumps(event))
+                await connection['websocket'].send_text(json.dumps(event))
 
     async def delete_conversation(self, event: dict):
         conversation_id = event['conversation_id']
