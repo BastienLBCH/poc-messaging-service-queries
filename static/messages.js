@@ -96,11 +96,11 @@ async function sendMessage(event) {
     myHeaders.append('Content-Type', 'application/json')
 
     var data = {
-        conversation_id: selectedConversationId,
         message_content: messageContent
     }
 
-    var url = `${commandServer}/conversations/sendmessages/`;
+    // var url = `${commandServer}/conversations/sendmessages/`;
+    var url = `${commandServer}/conversations/${selectedConversationId}`;
 
     messageField.value = "";
 

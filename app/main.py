@@ -148,5 +148,7 @@ def get_messages_from_conversations(request: Request, conversation_id: str):
         raise HTTPException(status_code=400, detail='Something went wrong')
 
 
-
+@app.get("/decodetoken")
+def returnDecodedJWT(request: Request):
+    return get_userid_from_request(request)
 

@@ -10,13 +10,13 @@ async function addUser(event) {
     myHeaders.append('Content-Type', 'application/json')
 
     var data = {
-        participant_id: userIdField.value,
-        conversation_id: selectedConversation.getAttribute("conversationId")
+        participant_id: userIdField.value
     };
 
     userIdField.value = "";
 
-    var url = `${commandServer}/conversations/addparticipant/`;
+    var conversationId = selectedConversation.getAttribute("conversationId");
+    var url = `${commandServer}/conversations/${conversationId}/participants`;
 
     const response = await fetch(
         url,

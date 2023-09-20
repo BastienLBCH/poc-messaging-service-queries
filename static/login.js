@@ -9,13 +9,13 @@ window.addEventListener('DOMContentLoaded', () => {
     let loginDiv = document.getElementById("loginDiv");
     let loginForm = document.getElementById("loginForm");
 
-    if(userIsLoggedIn == true) {
+    if(userIsLoggedIn === true) {
         giveInterface();
     }
 
     // loginDiv.innerHTML = keycloakTokenUrl + loginDiv.innerHTML;
 
-    loginForm.addEventListener("submit", (event) => {
+    loginForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
         var myHeaders = new Headers()
@@ -27,22 +27,33 @@ window.addEventListener('DOMContentLoaded', () => {
         data.append('username', document.getElementById('usernameField').value);
         data.append('password', document.getElementById('passwordField').value);
 
-        fetch(
+        var response = await fetch(
             keycloakTokenUrl,
             {
                 method: 'POST',
                 headers: myHeaders,
                 body: data
             }
+        );
+
+        var serverResponse = await response.json()
+
+        console.log(serverResponse);
+        accessToken = serverResponse["access_token"];
+        refreshToken = serverResponse["access_token"];
+        userIsLoggedIn = true;
+
+
+        myHeaders = new Headers();
+        myHeaders.append('Authorization', `Bearer ${serverResponse['accessToken']}` )
+        response = await fetch(
+            window.location.href + "decodetoken"
         )
-            .then(response => response.json())
-            .then(response => {
-                console.log(response);
-                accessToken = response["access_token"];
-                refreshToken = response["access_token"];
-                userIsLoggedIn = true;
-                giveInterface();
-            });
+
+
+        giveInterface();
+
+
     });
 
 });

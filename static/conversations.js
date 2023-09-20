@@ -69,7 +69,7 @@ async function createConversation() {
         name: conversationNameField.value
     }
 
-    var url = `${commandServer}/conversations/createconversation/`;
+    var url = `${commandServer}/conversations/`;
 
 
     conversationNameField.value = "";
