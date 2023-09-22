@@ -34,6 +34,22 @@ Explaining one by one :
 - **KEYCLOAK_PUBLIC_KEY**: Public key used by Keycloak to sign the JWT delivered
 - **KEYCLOAK_ALG**: Algorithm used by Keycloak to sign the JWT
 
+To use the demo frontend, add these requirements
+```
+# Optionals arguments for using integrated frontend
+KEYCLOAK_CLIENT_ID
+KEYCLOAK_USERS_URL
+COMMAND_SERVER
+
+# Used for integrated frontend & unit testing
+KEYCLOAK_TOKEN_URL
+```
+- **KEYCLOAK_CLIENT_ID** : ID of the keycloak client used to authentify users
+- **KEYCLOAK_USERS_URL** : [Keycloak endpoint to list realm's users](https://www.keycloak.org/docs-api/22.0.1/rest-api/#_users) ({base_url}/admin/realms/{realm}/users)
+- **COMMAND_SERVER** : Base url (http://host:port) of the command service. Should not end with a /
+- **KEYCLOAK_TOKEN_URL**: DO NOT PUT IT TWICE. Keycloak url to get the access token. 
+This argument is needed for both unit testing and using the demo frontend app ({base_url}/realms/{realm}/protocol/openid-connect/token)
+
 For unit test, you have to add extra variables :
 ```
 # Used for integrated frontend & unit testing
@@ -45,10 +61,12 @@ KEYCLOAK_USERNAME_TEST
 KEYCLOAK_USERNAME_TEST_2
 KEYCLOAK_PASSWORD_TEST
 ```
-- **KEYCLOAK_TOKEN_URL**: Keycloak url to get the access token. This argument is needed for both unit testing and using the demo frontend app
+- **KEYCLOAK_TOKEN_URL**: DO NOT PUT IT TWICE. Keycloak url to get the access token. This argument is needed for both unit testing and using the demo frontend app
 - **KEYCLOAK_USERNAME_TEST**: Username of a user existing for testing purpose
-- **KEYCLOAK_USERNAME_TEST_2**: Password of a user existing for testing purpose
-- **KEYCLOAK_PASSWORD_TEST**: 
+- **KEYCLOAK_USERNAME_TEST_2**: Username of a second user existing for testing purpose
+- **KEYCLOAK_PASSWORD_TEST**: Test users has to share the same password which will be stored in this variable
+
+
 
 **Example of a complete .env file :**
 ```
@@ -71,7 +89,7 @@ PASSWORD_TEST=azerty
 
 > [!IMPORTANT]
 > This repo is only one "service" of the whole project, if you want to really test it you need :
-> - [The command part](https://github.com/BastienLBCH/poc-messaging-service-queries) 
+> - [The command part](https://github.com/BastienLBCH/poc-messaging-service-commands) 
 > - Kafka
 > - Keycloak
 > 
