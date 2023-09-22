@@ -1,16 +1,33 @@
-import random
-import string
 import uuid
-import datetime
-import json
+import requests
+import asyncio
 
 from app.database import schemas, models
 from app.database.database import SessionLocal, engine
-from app.kafka_client import handle_event
+from app.main import handle_event
+from app.settings import Settings
+from app import utils
 
-from app.main import app
 
 db = SessionLocal()
+
+
+def login_user(username: str, password: str, settings: Settings):
+    """
+    Return access token and user_id for specific user
+    :param username:
+    :param password:
+    :return:
+    """
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    data = f"client_id={settings.keycloak_client_id}&username={username}&password={password}&grant_type=password"
+    r = requests.post(headers=headers, data=data, url=settings.keycloak_token_url)
+    access_token = r.json()["access_token"]
+    user_id = utils.get_userid_from_token(access_token)
+    return user_id, access_token
+
 
 class TestAddUserToConversation:
     def setup_method(self):
@@ -21,16 +38,19 @@ class TestAddUserToConversation:
         models.Base.metadata.create_all(bind=engine)
         self.db = db
 
+        settings = Settings()
+        self.user_id, self.access_token = login_user(settings.keycloak_username_test, settings.keycloak_password_test, settings)
+
         # Prepare conversation for further tests
         id_conversation = str(uuid.uuid4())
         self.created_conversation = {
             "id": id_conversation,
             "name": "conversation test",
-            "creator_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "creator_id": self.user_id,
             "event": "userCreatedConversation",
             "created_at": "2023-08-28T07:23:31.353437Z"
         }
-        handle_event(self.created_conversation)
+        asyncio.run(handle_event(self.created_conversation))
 
 
     def test_add_user_to_conversation(self):
@@ -42,13 +62,13 @@ class TestAddUserToConversation:
         participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
         event = {
             "id": 1,
-            "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "user_id": self.user_id,
             "participant_id": participant_id,
             "conversation_id": id_conversation,
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db_conversation = self.db.query(models.Conversation) \
             .filter(models.Conversation.id == id_conversation) \
@@ -74,7 +94,7 @@ class TestAddUserToConversation:
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db_conversation = self.db.query(models.Conversation) \
             .filter(models.Conversation.id == id_conversation) \
@@ -91,23 +111,21 @@ class TestAddUserToConversation:
         :return:
         """
         id_conversation = self.created_conversation['id']
-        participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
-        user_id = "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112"
         event = {
             "id": 1,
-            "user_id": user_id,
-            "participant_id": user_id,
+            "user_id": self.user_id,
+            "participant_id": self.user_id,
             "conversation_id": id_conversation,
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db_conversation = self.db.query(models.Conversation) \
             .filter(models.Conversation.id == id_conversation) \
             .first()
 
-        db_user = self.db.query(models.User).filter(models.User.id==user_id).first()
+        db_user = self.db.query(models.User).filter(models.User.id==self.user_id).first()
         user_in_conversation_counter = db_conversation.users.count(db_user)
 
         assert user_in_conversation_counter == 1
@@ -122,25 +140,25 @@ class TestAddUserToConversation:
         participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
         event = {
             "id": 1,
-            "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "user_id": self.user_id,
             "participant_id": participant_id,
             "conversation_id": id_conversation,
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         id_conversation = self.created_conversation['id']
         participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
         event = {
             "id": 1,
-            "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "user_id": self.user_id,
             "participant_id": participant_id,
             "conversation_id": id_conversation,
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db_conversation = self.db.query(models.Conversation) \
             .filter(models.Conversation.id == id_conversation) \
@@ -161,29 +179,41 @@ class TestRemoveUserFromConversation:
         models.Base.metadata.create_all(bind=engine)
         self.db = db
 
+        settings = Settings()
+        self.user_id, self.access_token = login_user(
+            settings.keycloak_username_test,
+            settings.keycloak_password_test,
+            settings
+        )
+
+        self.participant_id, self.participant_token = login_user(
+            settings.keycloak_username_test_2,
+            settings.keycloak_password_test,
+            settings
+        )
+
         # Prepare conversation for further tests
         id_conversation = str(uuid.uuid4())
         self.created_conversation = {
             "id": id_conversation,
             "name": "conversation test",
-            "creator_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "creator_id": self.user_id,
             "event": "userCreatedConversation",
             "created_at": "2023-08-28T07:23:31.353437Z"
         }
-        handle_event(self.created_conversation)
+        asyncio.run(handle_event(self.created_conversation))
 
         # Add the user to the conversation
         id_conversation = self.created_conversation['id']
-        self.participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
         event = {
             "id": 1,
-            "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "user_id": self.user_id,
             "participant_id": self.participant_id,
             "conversation_id": id_conversation,
             "event": "userAddedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.327046Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
 
     def test_user_remove_participant_from_conversation(self):
@@ -192,11 +222,10 @@ class TestRemoveUserFromConversation:
         :return:
         """
         id_conversation = self.created_conversation['id']
-        participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
         event = {
             "id": 1,
             "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
-            "participant_id": participant_id,
+            "participant_id": self.participant_id,
             "conversation_id": id_conversation,
             "event": "userRemovedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.599274Z"
@@ -207,14 +236,14 @@ class TestRemoveUserFromConversation:
             .first()
 
         db_participant = db.query(models.User)\
-            .filter(models.User.id==participant_id)\
+            .filter(models.User.id==self.participant_id)\
             .first()
 
         if not db_participant in db_conversation.users:
             db_conversation.users.append(db_participant)
             db.commit()
 
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db.refresh(db_conversation)
         participant_still_in_conversation = db_participant in db_conversation.users
@@ -227,13 +256,11 @@ class TestRemoveUserFromConversation:
         :return:
         """
         id_conversation = self.created_conversation['id']
-        participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
-        owner_id = self.created_conversation['creator_id']
 
         event = {
             "id": 1,
-            "user_id": participant_id,
-            "participant_id": owner_id,
+            "user_id": self.participant_id,
+            "participant_id": self.user_id,
             "conversation_id": id_conversation,
             "event": "userRemovedParticipantToConversation",
             "created_at": "2023-08-29T08:55:26.599274Z"
@@ -244,14 +271,14 @@ class TestRemoveUserFromConversation:
             .first()
 
         db_user = db.query(models.User)\
-            .filter(models.User.id==owner_id)\
+            .filter(models.User.id==self.user_id)\
             .first()
 
         if not db_user in db_conversation.users:
             db_conversation.users.append(db_user)
             db.commit()
 
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         db.refresh(db_conversation)
         participant_still_in_conversation = db_user in db_conversation.users

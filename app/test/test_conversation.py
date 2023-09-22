@@ -1,16 +1,31 @@
-import random
-import string
+import asyncio
 import uuid
-import datetime
-import json
+import requests
 
-from app.database import schemas, models
+from app.database import models
 from app.database.database import SessionLocal, engine
-from app.kafka_client import handle_event
-
-from app.main import app
+from app.main import handle_event
+from app.settings import Settings
+from app import utils
 
 db = SessionLocal()
+
+
+def login_user(username: str, password: str, settings: Settings):
+    """
+    Return access token and user_id for specific user
+    :param username:
+    :param password:
+    :return:
+    """
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
+    data = f"client_id={settings.keycloak_client_id}&username={username}&password={password}&grant_type=password"
+    r = requests.post(headers=headers, data=data, url=settings.keycloak_token_url)
+    access_token = r.json()["access_token"]
+    user_id = utils.get_userid_from_token(access_token)
+    return user_id, access_token
 
 
 class TestCreateConversation:
@@ -21,6 +36,14 @@ class TestCreateConversation:
         """
         models.Base.metadata.create_all(bind=engine)
         self.db = db
+
+        # Get access token to perform request as a logged user
+        settings = Settings()
+        self.user_id, self.access_token = login_user(
+            settings.keycloak_username_test,
+            settings.keycloak_password_test,
+            settings
+        )
 
 
     def test_create_conversation(self):
@@ -33,12 +56,12 @@ class TestCreateConversation:
         event = {
             "id": id_conversation,
             "name": "conversation test",
-            "creator_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "creator_id": self.user_id,
             "event": "userCreatedConversation",
             "created_at": "2023-08-28T07:23:31.353437Z"
         }
 
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         # Verify conversation exists
         db_conversation = self.db.query(models.Conversation)\
@@ -62,7 +85,7 @@ class TestCreateConversation:
             "created_at": "2023-08-28T07:23:31.353437Z"
         }
 
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         # Verify conversation exists
         db_conversation = self.db.query(models.Conversation)\
@@ -81,16 +104,26 @@ class TestRemoveConversation:
         models.Base.metadata.create_all(bind=engine)
         self.db = db
 
+
+        # Get access token to perform request as a logged user
+        settings = Settings()
+        self.user_id, self.access_token = login_user(
+            settings.keycloak_username_test,
+            settings.keycloak_password_test,
+            settings
+        )
+
+
         # Prepare conversation for further tests
         id_conversation = str(uuid.uuid4())
         self.created_conversation = {
             "id": id_conversation,
             "name": "conversation test",
-            "creator_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "creator_id": self.user_id,
             "event": "userCreatedConversation",
             "created_at": "2023-08-28T07:23:31.353437Z"
         }
-        handle_event(self.created_conversation)
+        asyncio.run(handle_event(self.created_conversation))
 
     def test_user_delete_conversation(self):
         """
@@ -98,16 +131,15 @@ class TestRemoveConversation:
         :return:
         """
         id_conversation = self.created_conversation['id']
-        user_id = self.created_conversation['creator_id']
 
         event = {
             "id": 1,
-            "user_id": user_id,
+            "user_id": self.user_id,
             "conversation_id": id_conversation,
             "event": "userDeletedConversation",
             "created_at": "2023-08-30T12:13:56.008436Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         # Verify conversation exists
         db_conversation = self.db.query(models.Conversation) \
@@ -124,7 +156,6 @@ class TestRemoveConversation:
         self.setup_method()
 
         id_conversation = self.created_conversation['id']
-        user_id = self.created_conversation['creator_id']
         participant_id = "d8c2ec28-b43a-4259-99fa-924be1bf4ac0"
 
         event = {
@@ -134,7 +165,7 @@ class TestRemoveConversation:
             "event": "userDeletedConversation",
             "created_at": "2023-08-30T12:13:56.008436Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         # Verify conversation exists
         db_conversation = self.db.query(models.Conversation) \
@@ -150,15 +181,14 @@ class TestRemoveConversation:
         """
         self.setup_method()
         id_conversation = self.created_conversation['id']
-        user_id = self.created_conversation['creator_id']
 
         event = {
             "id": 1,
-            "user_id": user_id,
+            "user_id": self.user_id,
             "event": "userDeletedConversation",
             "created_at": "2023-08-30T12:13:56.008436Z"
         }
-        handle_event(event)
+        asyncio.run(handle_event(event))
 
         # Verify conversation exists
         db_conversation = self.db.query(models.Conversation) \
