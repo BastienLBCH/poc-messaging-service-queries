@@ -149,6 +149,21 @@ def get_all_messages_from_conversation(user_id: str, conversation_id: str):
     return None
 
 
+def get_all_users_from_conversation(user_id: str, conversation_id: str):
+    """
+    Get all members of a conversation if the user is in the conversation
+    :param user_id:
+    :param conversation_id:
+    :return:
+    """
+    db_user = db.query(models.User).filter(models.User.id==user_id).first()
+    db_conversation = db.query(models.Conversation).filter(models.Conversation.id==conversation_id).first()
+
+    if db_user in db_conversation.users:
+        return db_conversation.users
+    return None
+
+
 def get_all_users_ids_from_conversation(conversation_id: str):
     """
     Return all users ids from a specific conversation

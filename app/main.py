@@ -1,5 +1,6 @@
 import threading
 import asyncio
+import os
 
 from contextlib import asynccontextmanager
 from fastapi import (
@@ -26,6 +27,7 @@ from app.database.interface import (
     add_message_to_conversation,
     remove_user_from_conversation,
     delete_conversation,
+    get_all_users_from_conversation,
 )
 from app.database.database import engine, SessionLocal
 from app.utils import get_userid_from_request
@@ -41,19 +43,19 @@ connection_manager = ConnectionManager()
 
 async def handle_event(event):
     if event['event'] == "userCreatedConversation":
-        await connection_manager.create_conversation(event)
+        # await connection_manager.create_conversation(event)
         create_conversation(event)
     elif event['event'] == "userAddedParticipantToConversation":
-        await connection_manager.add_user_to_conversation(event)
+        # await connection_manager.add_user_to_conversation(event)
         add_user_to_conversation(event)
     elif event['event'] == "userSentMessageToConversation":
-        await connection_manager.send_message(event)
+        # await connection_manager.send_message(event)
         add_message_to_conversation(event)
     elif event['event'] == "userRemovedParticipantToConversation":
-        await connection_manager.remove_user_from_conversation(event)
+        # await connection_manager.remove_user_from_conversation(event)
         remove_user_from_conversation(event)
     elif event['event'] == "userDeletedConversation":
-        await connection_manager.delete_conversation(event)
+        # await connection_manager.delete_conversation(event)
         delete_conversation(event)
 
 
@@ -77,13 +79,15 @@ async def lifespan(app: FastAPI):
     mythread.join()
 
 
+settings = Settings()
+
 app = FastAPI(lifespan=lifespan)
+
 
 authmiddleware = ValidatingMiddleware()
 app.add_middleware(BaseHTTPMiddleware, dispatch=authmiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-settings = Settings()
 
 
 @app.websocket("/ws/{token}")
@@ -145,6 +149,24 @@ def get_messages_from_conversations(request: Request, conversation_id: str):
             raise Exception()
         return messages
     except Exception:
+        raise HTTPException(status_code=400, detail='Something went wrong')
+
+
+@app.get("/conversations/{conversation_id}/members", response_model=list[schemas.User])
+def get_conversation_members(request: Request, conversation_id: str):
+    """
+    Return all users from a conversation
+    :param request:
+    :param conversation_id: str id of the conversation to get
+    :return:
+    """
+    try:
+        user_id = get_userid_from_request(request)
+        users = get_all_users_from_conversation(user_id, conversation_id)
+        if users is None:
+            raise Exception()
+        return users
+    except Exception as e:
         raise HTTPException(status_code=400, detail='Something went wrong')
 
 
