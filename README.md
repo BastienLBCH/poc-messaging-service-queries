@@ -70,18 +70,24 @@ KEYCLOAK_PASSWORD_TEST
 
 **Example of a complete .env file :**
 ```
-KEYCLOAK_PUBLIC_KEY=MIIBIjANB...AQAB
+KEYCLOAK_PUBLIC_KEY=MIIB...AQAB
 KEYCLOAK_ALG=RS256
 
+
+# Optionals arguments for using integrated frontend
+KEYCLOAK_CLIENT_ID=login-client
+KEYCLOAK_USERS_URL=http://localhost:8080/admin/realms/poc/users/
+COMMAND_SERVER=http://localhost:8000
+
+
+# Used for integrated frontend & unit testing
 KEYCLOAK_TOKEN_URL=http://localhost:8080/realms/poc/protocol/openid-connect/token
-BOOTSTRAP_SERVERS=localhost:9092
-TOPIC=messaging-service
 
-ENV=test
 
-CLIENT_ID=test-login-client
-USERNAME_TEST=John
-PASSWORD_TEST=azerty
+# Optionals Arguments for unit testing
+KEYCLOAK_USERNAME_TEST=John
+KEYCLOAK_USERNAME_TEST_2=Doe
+KEYCLOAK_PASSWORD_TEST=qwerty
 ```
 
 
@@ -97,11 +103,11 @@ PASSWORD_TEST=azerty
 
 You can easily deploy this service using docker using these commands in the project root directory:
 ```bash
-docker build . -t poc-messaging-service-command
+docker build . -t poc-messaging-service-query
 ```
 then
 ```bash 
-docker run -p 8000:8000 --name poc-messaging-service-command poc-messaging-service-command 
+docker run -p 8000:8000 --name poc-messaging-service-query poc-messaging-service-query 
 ```
 
 
@@ -109,9 +115,9 @@ docker run -p 8000:8000 --name poc-messaging-service-command poc-messaging-servi
 This API provides endpoints to create conversations, post messages and add a participant to a conversation.
 
 
-### Create a conversation
-- **Endpoint**: /conversations/
-- **Method**: POST
+### List all user's conversation
+- **Endpoint**: /conversations
+- **Method**: GET
 
 Headers :
 
@@ -120,17 +126,10 @@ Headers :
 | Authorization   |  Bearer {access token} |
 
 
-Body :
-(Can either be raw using the JSON syntax or a form)
 
-| Attribute |               Value |
-|:----------|--------------------:|
-| name      | {conversation name} |
-
-
-### Add user to a conversation
-- **Endpoint**: /conversations/{conversation id}/participants
-- **Method**: POST
+### Get all messages from a conversation
+- **Endpoint**: /conversations/{conversation_id}
+- **Method**: GET
 
 Headers :
 
@@ -139,20 +138,11 @@ Headers :
 | Authorization   |  Bearer {access token} |
 
 
-Body :
-(Can either be raw using the JSON syntax or a form)
-
-| Attribute       |                                                 Value |
-|:----------------|------------------------------------------------------:|
-| participant_id  |           {Id of the user to add to the conversation} |
 
 
-
-
-
-### Send a message to a conversation
-- **Endpoint**: /conversations/{conversation id}
-- **Method**: POST
+### Get all members from a conversation
+- **Endpoint**: /conversations/{conversation id}/members
+- **Method**: GET
 
 Headers :
 
@@ -160,13 +150,6 @@ Headers :
 |:----------------|-----------------------:|
 | Authorization   |  Bearer {access token} |
 
-
-Body :
-(Can either be raw using the JSON syntax or a form)
-
-| Attribute        |                                                 Value |
-|:-----------------|------------------------------------------------------:|
-| message_content  |                 {Message to send to the conversation} |
 
 
 
