@@ -3,14 +3,14 @@ This code is a proof of concept.
 Meaning it's not made to run on a production environment (e.g. it uses a sqlite database) 
 and it is also the first time I use these design patterns.
 
-It's part of an instant messaging service designed with the CQRS designed pattern combined with event sourcing.
+It's part of an instant messaging service designed with the CQRS design pattern combined with event sourcing.
 
-This repo contains the queries part, meaning that it get the event from Kafka, update the database and is focused on 
+This repo contains the queries part, meaning that it gets the event from Kafka, update the database and is focused on 
 delivering data to the users
 
 > [!NOTE]
 > For easier testing, as ***demo*** purpose, this project also contains a small frontend app. 
-> Please take note that I am not a frontend developer, never pretented to be one and that on a real project I would have developped a real application
+> Please take note that I am not a frontend developer, never pretented to be one and that on a "real" situation I would have developped it in a third project
 
 
 ## Installation
