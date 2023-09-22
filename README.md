@@ -151,6 +151,12 @@ Headers :
 | Authorization   |  Bearer {access token} |
 
 
+### Connect the websocket
+The service uses websockets to send events in real time to the frontend, so it can update without reloading everything.
+
+- **endpoint**: ws://{base url}/ws/{token}
+
+The token in the url is the Json Web Token provided on login
 
 
 
