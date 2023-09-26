@@ -70,6 +70,10 @@ KEYCLOAK_PASSWORD_TEST
 
 **Example of a complete .env file :**
 ```
+KAFKA_BOOTSTRAP_SERVER=localhost:9092
+KAFKA_GROUP_ID=messaging_service
+KAFKA_TOPIC=messaging-service
+
 KEYCLOAK_PUBLIC_KEY=MIIB...AQAB
 KEYCLOAK_ALG=RS256
 
