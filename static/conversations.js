@@ -34,7 +34,7 @@ function getConversations() {
 
     myHeaders.append('Authorization', 'Bearer '+accessToken);
 
-    let url = window.location.href + "conversations";
+    let url = access_url + "/conversations";
 
     fetch(
         url,

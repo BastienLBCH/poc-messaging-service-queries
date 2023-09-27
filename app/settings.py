@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     # Optionals settings for using integrated demo frontend
     command_server: str = ""
     keycloak_client_id: str = ""
-    static_url: str = ""
+    access_url: str = ""
 
     # Optionals settings to start unittests
     keycloak_username_test: str = ""

@@ -1,7 +1,7 @@
 function startwebsocket() {
     // start websocket
-    var baseurl = window.location.href.replace("http", "ws");
-    var url = `${baseurl}ws/${accessToken}`;
+    var baseurl = access_url.replace("http", "ws");
+    var url = `${baseurl}/ws/${accessToken}`;
 
     socket = new WebSocket(url);
 

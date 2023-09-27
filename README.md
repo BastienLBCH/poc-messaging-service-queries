@@ -43,12 +43,12 @@ COMMAND_SERVER
 
 # Used for integrated frontend & unit testing
 KEYCLOAK_TOKEN_URL
-STATIC_URL
+ACCESS_URL
 ```
 - **KEYCLOAK_CLIENT_ID** : ID of the keycloak client used to authentify users
 - **KEYCLOAK_USERS_URL** : [Keycloak endpoint to list realm's users](https://www.keycloak.org/docs-api/22.0.1/rest-api/#_users) ({base_url}/admin/realms/{realm}/users)
 - **COMMAND_SERVER** : Base url (http://host:port) of the command service. Should not end with a /
-- **STATIC_URL**: Tell the frontend how to reach this service (for example if behind an API Gateway) to get resources like js scripts 
+- **ACCESS_URL**: Tell the frontend how to reach this service (for example if behind an API Gateway) to get resources like js scripts 
 - **KEYCLOAK_TOKEN_URL**: DO NOT PUT IT TWICE. Keycloak url to get the access token. 
 This argument is needed for both unit testing and using the demo frontend app ({base_url}/realms/{realm}/protocol/openid-connect/token)
 
@@ -84,7 +84,7 @@ KEYCLOAK_ALG=RS256
 KEYCLOAK_CLIENT_ID=login-client
 KEYCLOAK_USERS_URL=http://localhost:8080/admin/realms/poc/users/
 COMMAND_SERVER=http://localhost:8000
-STATIC_URL=http://localhost/static
+ACCESS_URL=http://localhost
 
 
 # Used for integrated frontend & unit testing

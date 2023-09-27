@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Conversations</title>
-    <link href="{{static_url}}/style.css" rel="stylesheet">
+    <link href="{{access_url}}/static/style.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
 </head>
 <body>
@@ -127,13 +127,15 @@
 
     let socket = null;
 
+    let access_url = "{{access_url}}";
+
 </script>
 <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 
-<script src="{{static_url}}/users.js"></script>
-<script src="{{static_url}}/websockets.js"></script>
-<script src="{{static_url}}/messages.js"></script>
-<script src="{{static_url}}/conversations.js"></script>
-<script src="{{static_url}}/login.js"></script>
+<script src="{{access_url}}/static/users.js"></script>
+<script src="{{access_url}}/static/websockets.js"></script>
+<script src="{{access_url}}/static/messages.js"></script>
+<script src="{{access_url}}/static/conversations.js"></script>
+<script src="{{access_url}}/static/login.js"></script>
 </body>
 </html>

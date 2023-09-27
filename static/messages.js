@@ -58,7 +58,7 @@ async function getMessages(event){
 
     // Get all messages then populates message column
     var element = event.target;
-    let url = window.location.href + "conversations/" + element.getAttribute('conversationId');
+    let url = access_url + "/conversations/" + element.getAttribute('conversationId');
 
     // variable users is used to associate the user's id with the username
     let users = {};

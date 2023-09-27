@@ -47,7 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
         myHeaders = new Headers();
         myHeaders.append('Authorization', `Bearer ${serverResponse['accessToken']}` )
         response = await fetch(
-            window.location.href + "decodetoken"
+            access_url + "/decodetoken"
         )
 
 
