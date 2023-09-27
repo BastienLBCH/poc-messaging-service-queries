@@ -29,7 +29,7 @@ class ValidatingMiddleware:
 
     async def __call__(self, request: Request, call_next):
         if request.url.path != "/" \
-                and not request.url.path.endswith("/static/") \
+                and not request.url.path.startswith("/static") \
                 and not request.url.path.startswith("ws://")\
                 and not request.url.path.endswith(".js"):
             keycloak_public_key = settings.keycloak_public_key

@@ -83,9 +83,6 @@ settings = Settings()
 
 app = FastAPI(lifespan=lifespan)
 
-
-authmiddleware = ValidatingMiddleware()
-app.add_middleware(BaseHTTPMiddleware, dispatch=authmiddleware)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
