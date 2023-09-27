@@ -111,7 +111,8 @@ async def get_index(request: Request):
             'keycloak_token_url': settings.keycloak_token_url,
             'keycloak_users_url': settings.keycloak_users_url,
             'keycloak_client_id': settings.keycloak_client_id,
-            'command_server': settings.command_server
+            'command_server': settings.command_server,
+            'static_url': settings.static_url
         })
 
 

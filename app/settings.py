@@ -12,11 +12,15 @@ class Settings(BaseSettings):
     # Optionals settings for using integrated demo frontend
     command_server: str = ""
     keycloak_client_id: str = ""
+    static_url: str = ""
+
+    # Optionals settings to start unittests
     keycloak_username_test: str = ""
     keycloak_username_test_2: str = ""
     keycloak_password_test: str = ""
     keycloak_token_url: str = ""
     keycloak_users_url: str = ""
+
 
     model_config = SettingsConfigDict(env_file=".env")
 
