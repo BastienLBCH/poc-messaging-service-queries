@@ -16,7 +16,7 @@ async function addUser(event) {
     userIdField.value = "";
 
     var conversationId = selectedConversation.getAttribute("conversationId");
-    var url = `${commandServer}/conversations/${conversationId}/participants`;
+    var url = `${commandServer}/conversations/${conversationId}/members`;
 
     const response = await fetch(
         url,
