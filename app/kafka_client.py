@@ -48,6 +48,7 @@ def kafka_worker(handle_event, stop):
 
             if stop():
                 break
+        consumer.close()
 
     except Exception as e:
         print(e)
