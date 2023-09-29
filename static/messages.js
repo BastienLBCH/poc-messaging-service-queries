@@ -27,8 +27,10 @@ async function changeSelectedConversation(currentlySelectedConversation) {
     var previouslySelectedConversation = document.getElementsByClassName("selectedConversation");
     if (previouslySelectedConversation.length > 0) {
         previouslySelectedConversation[0].classList.remove("selectedConversation");
+        previouslySelectedConversation[0].classList.remove("has-background-success-light");
     }
     currentlySelectedConversation.classList.add("selectedConversation");
+    currentlySelectedConversation.classList.add("has-background-success-light");
 }
 
 async function getMessages(event){
