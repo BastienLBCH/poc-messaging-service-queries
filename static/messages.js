@@ -20,6 +20,8 @@ function addMessageToConversation(username, content, messageId) {
     var boxContent = `${username} : ${content}`;
     conversationBox.appendChild(document.createTextNode(boxContent));
     messagesColumn.insertBefore(conversationBox, messageForm);
+
+    messagesColumn.scrollTo({top: messagesColumn.scrollHeight, left: 0});
     // messagesColumn.appendChild(conversationBox);
 }
 
@@ -80,8 +82,6 @@ async function getMessages(event){
 
         addMessageToConversation(username, content, message['id']);
     }
-    var messagesColumn = document.getElementById("messagesColumn");
-    messagesColumn.scrollTo({top: messagesColumn.scrollHeight, left: 0});
 }
 
 
