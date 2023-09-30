@@ -78,7 +78,7 @@ def add_message_to_conversation(event: dict):
     db_conversation = db.query(models.Conversation)\
         .filter(models.Conversation.id == event['conversation_id'])\
         .first()
-    if db_conversation is not None:
+    if db_conversation is not None and db_user in db_conversation.users:
         db_message = models.Message(
             content=event["message_content"],
             created_at=datetime.datetime.fromisoformat(event["created_at"]),
@@ -87,6 +87,8 @@ def add_message_to_conversation(event: dict):
         )
         db.add(db_message)
         db.commit()
+        return True
+    return False
 
 
 def remove_user_from_conversation(event: dict):
@@ -103,6 +105,8 @@ def remove_user_from_conversation(event: dict):
         if db_participant in db_conversation.users:
             db_conversation.users.remove(db_participant)
             db.commit()
+            return True
+    return False
 
 
 def delete_conversation(event: dict):

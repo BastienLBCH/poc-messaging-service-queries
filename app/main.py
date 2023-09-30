@@ -43,20 +43,20 @@ connection_manager = ConnectionManager()
 
 async def handle_event(event):
     if event['event'] == "userCreatedConversation":
-        await connection_manager.create_conversation(event)
-        create_conversation(event)
+        if create_conversation(event):
+            await connection_manager.create_conversation(event)
     elif event['event'] == "userAddedParticipantToConversation":
-        await connection_manager.add_user_to_conversation(event)
-        add_user_to_conversation(event)
+        if add_user_to_conversation(event):
+            await connection_manager.add_user_to_conversation(event)
     elif event['event'] == "userSentMessageToConversation":
-        await connection_manager.send_message(event)
-        add_message_to_conversation(event)
+        if add_message_to_conversation(event):
+            await connection_manager.send_message(event)
     elif event['event'] == "userRemovedParticipantToConversation":
-        await connection_manager.remove_user_from_conversation(event)
-        remove_user_from_conversation(event)
+        if remove_user_from_conversation(event):
+            await connection_manager.remove_user_from_conversation(event)
     elif event['event'] == "userDeletedConversation":
-        await connection_manager.delete_conversation(event)
-        delete_conversation(event)
+        if delete_conversation(event):
+            await connection_manager.delete_conversation(event)
 
 
 def get_db():
@@ -85,6 +85,8 @@ app = FastAPI(lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+authmiddleware = ValidatingMiddleware()
+app.add_middleware(BaseHTTPMiddleware, dispatch=authmiddleware)
 
 
 @app.websocket("/ws/{token}")

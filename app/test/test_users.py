@@ -224,7 +224,7 @@ class TestRemoveUserFromConversation:
         id_conversation = self.created_conversation['id']
         event = {
             "id": 1,
-            "user_id": "3866bd98-8dc2-4de6-aad0-8ef1a4e9a112",
+            "user_id": self.user_id,
             "participant_id": self.participant_id,
             "conversation_id": id_conversation,
             "event": "userRemovedParticipantToConversation",

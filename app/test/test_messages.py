@@ -38,6 +38,7 @@ class TestMessages:
         settings = Settings()
 
         self.user_id, self.access_token = login_user(settings.keycloak_username_test, settings.keycloak_password_test, settings)
+        self.user_id_2, self.access_token_2 = login_user(settings.keycloak_username_test_2, settings.keycloak_password_test, settings)
 
         # Prepare conversation for further tests
         id_conversation = str(uuid.uuid4())
@@ -73,3 +74,31 @@ class TestMessages:
                 message_is_in_conversation = True
 
         assert message_is_in_conversation is True
+
+    def test_user_not_in_conversation_cant_send_message(self):
+        """
+        Test that a user who's not in a conversation can't send message
+        :return:
+        """
+        id_conversation = self.created_conversation['id']
+        message_content = ''.join(random.choice(string.ascii_letters) for i in range(25))
+        event = {
+            "id": 1,
+            "user_id": self.user_id_2,
+            "conversation_id": id_conversation,
+            "message_content": message_content,
+            "event": "userSentMessageToConversation",
+            "created_at": "2023-08-29T08:55:26.694214Z"
+        }
+        asyncio.run(handle_event(event))
+
+        db_conversation = db.query(models.Conversation) \
+            .filter(models.Conversation.id == id_conversation) \
+            .first()
+
+        message_is_in_conversation = False
+        for message in db_conversation.messages:
+            if message.content == message_content:
+                message_is_in_conversation = True
+
+        assert message_is_in_conversation is False

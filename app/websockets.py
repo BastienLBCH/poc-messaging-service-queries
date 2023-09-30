@@ -45,12 +45,15 @@ class ConnectionManager:
                 await connection['websocket'].send_text(json.dumps(event))
 
     async def delete_conversation(self, event: dict):
-        conversation_id = event['conversation_id']
-        users = interface.get_all_users_ids_from_conversation(conversation_id)
-        for user in users:
-            for connection in self.active_connections:
-                if connection['user'] == user:
-                    await connection['websocket'].send_text(json.dumps(event))
+        conversation_id = event['conversation_id'] if 'conversation_id' in event else False
+        if not conversation_id:
+            users = interface.get_all_users_ids_from_conversation(conversation_id)
+            for user in users:
+                for connection in self.active_connections:
+                    if connection['user'] == user:
+                        await connection['websocket'].send_text(json.dumps(event))
+                        return True
+        return False
 
     async def broadcast(self, message: str):
         for connection in self.active_connections:
