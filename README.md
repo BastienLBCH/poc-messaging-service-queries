@@ -119,7 +119,7 @@ docker run -p 8000:8000 --name poc-messaging-service-query poc-messaging-service
 
 
 ## Usage
-This API provides endpoints to create conversations, post messages and add a participant to a conversation.
+This API provides endpoints to list conversations, get messages and members from a conversations
 
 
 ### List all user's conversation
